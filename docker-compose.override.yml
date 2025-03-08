@@ -1,0 +1,42 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+        PGADMIN_DEFAULT_EMAIL: '${PGADMIN_DEFAULT_EMAIL:-admin@example.com}'
+        PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_DEFAULT_PASSWORD:-password}'
+    ports:
+      - "${FORWARD_PGADMIN_PORT:-5050}:80"
+    depends_on:
+      - pgsql
+    networks:
+      - sail
+    volumes:
+      - sail-pgadmin:/var/lib/pgadmin
+  mongo-express:
+    image: mongo-express
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: '${MONGO_EXPRESS_USERNAME:-admin}'
+      ME_CONFIG_BASICAUTH_PASSWORD: '${MONGO_EXPRESS_PASSWORD:-pass}'
+      ME_CONFIG_MONGODB_URL: '${MONGODB_URI:-mongodb://admin:password@mongodb:27017/?authSource=admin}'
+    ports:
+      - "8081:8081"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sail
+  redis-ui:
+    image: redis/redisinsight
+    ports:
+      - "${FORWARD_REDIS_UI_PORT:-5540}:5540"
+    networks:
+      - sail
+    depends_on:
+      - redis
+    volumes:
+      - sail-redis-ui:/data
+volumes:
+  sail-pgadmin:
+    driver: local
+  sail-redis-ui:
+    driver: local
